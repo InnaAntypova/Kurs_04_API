@@ -1,7 +1,7 @@
 from src.vacancies_abc import ABCVacancies
 import requests
+import datetime
 import os
-from src.vacancies import Vacancy
 
 
 class SuperJobAPI(ABCVacancies):
@@ -14,41 +14,39 @@ class SuperJobAPI(ABCVacancies):
     def __init__(self, job_title: str):
         self.job_title = job_title  # Название вакансии
 
-    def get_vacancies(self):
-        """ Метод для получения вакансий """
+    def get_from_api(self):
+        """ Метод для получения ответа от API"""
 
         param = {'keyword': self.job_title,
                  'town': 73,  # ищем в Ростове-на-Дону
                  'page': 0,
                  'count': 100}  # кол-во вакансий
 
-        response = requests.get(url=SuperJobAPI.JOB_URL, headers={"X-Api-App-Id": SuperJobAPI.api_key},
-                                params=param).json()
-        # vacancies_list = []
-        # for item in response['objects']:
-        #     vacancies_list.append(item)
-        # return vacancies_list
+        headers = {"X-Api-App-Id": SuperJobAPI.api_key}
+
+        response = requests.get(url=SuperJobAPI.JOB_URL, headers=headers,
+                                params=param).json()['objects']
         return response
 
-    @staticmethod
-    def get_vacancy(response_data):
-        for vacancy in response_data['objects']:
-        #for vacancy in response_data:
-            address = vacancy['address']
-            vacancy_name = vacancy['profession']
-            area = vacancy['town']['title']
-            employment = vacancy['type_of_work']['title']
-            id_v = vacancy['id']
-            published = vacancy['date_pub_to']
-            requirement = vacancy['vacancyRichText']
-            responsibility = None
-            salary = f"{vacancy['payment_from']} - {vacancy['payment_to']} {vacancy['currency']}"
-
-            vacancy = Vacancy(vacancy_name, area, salary, address, published, requirement, responsibility,
-                              employment, id_v)
-            Vacancy.vacancy_obj_list.append(vacancy)
-
-# job = SuperJobAPI('Python')
-# print(job.get_vacancies())
-
-
+    def get_vacancy(self) -> list:
+        """ Метод собирает из необходимых данных лист с вакансиями"""
+        all_job_vacancies = []
+        data = self.get_from_api()
+        for vacancy in data:
+            published = datetime.datetime.fromtimestamp(vacancy['date_pub_to']).strftime('%d-%m-%Y')
+            salary_from = vacancy['payment_from'] if vacancy['payment_from'] else 0
+            salary_to = vacancy['payment_to'] if vacancy['payment_to'] else 0
+            address = vacancy['address'] if vacancy['address'] else ''
+            all_job_vacancies.append({
+                'address': address,
+                'salary_from': salary_from,
+                'salary_to': salary_to,
+                'published': published,
+                'vacancy_url': vacancy['link'],
+                'vacancy_name': vacancy['profession'],
+                'area': vacancy['town']['title'],
+                'employment': vacancy['type_of_work']['title'],
+                'requirement': vacancy['vacancyRichText'],
+                'responsibility': '',
+                'platform': 'SuperJob'})
+        return all_job_vacancies

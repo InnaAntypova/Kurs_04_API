@@ -1,24 +1,30 @@
-from src.hh_vacancies import HeadHunterAPI
-from src.job_vacancies import SuperJobAPI
-from src.json_saver import JSONSaver
-from src.vacancies import Vacancy
+from src.utils import get_vacancies, read_all_vacancies, sort_for_date, sort_for_salary
+
 
 def main():
     print("Программа сформирует для Вас список вакансий из таких платформ: 'HeadHunter', 'SuperJob'")
     job_title = str(input("Введите данные для поиска: ")).title()
-    # hh_api = HeadHunterAPI(job_title)
-    # hh_vacan = hh_api.get_vacancies()
-    # hh_api.get_vacancy(hh_vacan)
-    # vacancy = Vacancy
-    # vacancy.vacancy_info()
+    get_vacancies(job_title)
+    print("Данные сформированы.")
+    print("Нажмите '1' - для чтения всех вакансий, '2' - отсортировать по дате, '3' - топ N вакансий по зарплате.")
+    print("Для завершения программы нажмите '0'.")
+    while True:
+        user_input = input("Ваш выбор: ")
+        print("")
 
-    superjob_api = SuperJobAPI(job_title)
-    vac = superjob_api.get_vacancies()
-    superjob_api.get_vacancy(vac)
-    vacancy = Vacancy
-    vacancy.vacancy_info()
+        if user_input == '1':
+            read_all_vacancies()
 
+        if user_input == '2':
+            sort_for_date()
 
+        if user_input == '3':
+            top_n = int(input("Введите количество вакансий: "))
+            sort_for_salary(top_n)
+
+        if user_input == '0':
+            print("Программа завершена.")
+            break
 
 
 if __name__ == '__main__':

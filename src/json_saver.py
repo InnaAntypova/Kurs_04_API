@@ -35,4 +35,4 @@ class JSONSaver:
                 vacancy_url = vacancy['vacancy_url']
 
                 Vacancy.vacancy_obj_list.append(Vacancy(vacancy_name, area, salary_from, salary_to, address, published,
-                                                requirement, responsibility, employment, platform, vacancy_url))
+                                                        requirement, responsibility, employment, platform, vacancy_url))
